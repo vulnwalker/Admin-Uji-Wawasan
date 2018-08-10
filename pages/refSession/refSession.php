@@ -217,7 +217,7 @@ class refSession extends baseObject{
         <td style='vertical-align:middle;'>".$this->generateDate($tanggal_mulai)."</td>
         <td style='vertical-align:middle;'>".$this->generateDate($tanggal_selesai)."</td>
         <td style='vertical-align:middle;'>$deskripsi</td>
-        <td style='text-align:center;'><img src='' style='height:100px;width:100px;'></img></td>
+        <td style='text-align:center;'><img src='$gambar' style='height:100px;width:100px;'></img></td>
     </tr>
     ";
     return $tableRow;
