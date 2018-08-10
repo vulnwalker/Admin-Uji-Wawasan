@@ -14,6 +14,26 @@ switch ($pages) {
     include "pages/refMember/refMember.php";
     break;
   }
+  case 'refSession':{
+    checkLogin();
+    include "pages/refSession/refSession.php";
+    break;
+  }
+  case 'refKategori':{
+    checkLogin();
+    include "pages/refKategori/refKategori.php";
+    break;
+  }
+  case 'refSoal':{
+    checkLogin();
+    include "pages/refSoal/refSoal.php";
+    break;
+  }
+  case 'refHadiah':{
+    checkLogin();
+    include "pages/refHadiah/refHadiah.php";
+    break;
+  }
 
   case 'logout':{
     $_SESSION['username'] = '';

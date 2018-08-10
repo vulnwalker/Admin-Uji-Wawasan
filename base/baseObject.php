@@ -384,10 +384,34 @@ class baseObject extends Config{
                 <span>Dashboard</span>
             </a>
             "),
-        array("refServer","
+        array("refMember","
             <a href='pages.php?page=refMember' title='Member'>
-                <i class='glyph-icon icon-cloud'></i>
+                <i class='glyph-icon icon-elusive-user'></i>
                 <span>Member</span>
+            </a>
+            "),
+        array("refSession","
+            <a href='pages.php?page=refSession' title='Session'>
+                <i class='glyph-icon icon-circle-o-notch'></i>
+                <span>Session</span>
+            </a>
+            "),
+        array("refKategori","
+            <a href='pages.php?page=refKategori' title='Kategori'>
+                <i class='glyph-icon icon-list-ul'></i>
+                <span>Kategori</span>
+            </a>
+            "),
+        array("refSoal","
+            <a href='pages.php?page=refSoal' title='Soal'>
+                <i class='glyph-icon icon-lightbulb-o'></i>
+                <span>Soal</span>
+            </a>
+            "),
+        array("refHadiah","
+            <a href='pages.php?page=refHadiah' title='Hadiah'>
+                <i class='glyph-icon icon-typicons-gift'></i>
+                <span>Hadiah</span>
             </a>
             "),
 
@@ -415,7 +439,7 @@ class baseObject extends Config{
     }
 
     $sideBar = "
-    <div id='page-sidebar' style='height: 3195px;'>
+    <div id='page-sidebar' style='height: 3195px;' class='bg-black font-inverse'>
     <div class='scroll-sidebar' style='height: 3195px;'>
       <ul id='sidebar-menu' class='sf-js-enabled sf-arrows'>
         $listSideBar
@@ -651,6 +675,29 @@ class baseObject extends Config{
     </div>";
     return $html;
   }
+  function generateDate($tanggal){
+        $tanggal = explode('-',$tanggal);
+        $tanggal = $tanggal[2]."-".$tanggal[1]."-".$tanggal[0];
+        return $tanggal;
+  }
+  function putImage($baseImage,$imageLocation){
+    $this->baseToImage($baseImage,$imageLocation);
+    return $imageLocation;
+  }
+  function baseToImage($base64_string, $output_file) {
+		$ifp = fopen( $output_file, 'wb' );
+		$data = explode( ',', $base64_string );
+		fwrite( $ifp, base64_decode( $data[ 1 ] ) );
+		fclose( $ifp );
+		return str_replace("../",$output_file);
+  }
+  function imageToBase($path){
+    $type = pathinfo($path, PATHINFO_EXTENSION);
+    $data = file_get_contents($path);
+    $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+    return $base64;
+  }
+
 
 
 }
