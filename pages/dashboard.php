@@ -10,230 +10,10 @@ class dashboard extends baseObject{
        $$key = $value;
     }
 	  switch($_GET['API']){
-      case 'refreshList':{
-        if(!empty($filterCari)){
-          $arrKondisi[] = "nama_server like '%$filterCari%' ";
-          $arrKondisi[] = "alamat_ip like '%$filterCari%' ";
-          $arrKondisi[] = "user_ftp like '%$filterCari%' ";
-          $arrKondisi[] = "password_ftp like '%$filterCari%' ";
-          $arrKondisi[] = "port_ftp like '%$filterCari%' ";
-          $arrKondisi[] = "status like '%$filterCari%' ";
-          $kondisi = join(" or ",$arrKondisi);
-          $kondisi = " where $kondisi ";
-        }
-        // if(!empty($limitTable)){
-        //     if($pageKe == 1){
-        //        $queryLimit  = " limit 0,$limitTable";
-        //     }else{
-        //        $dataMulai = ($pageKe - 1)  * $limitTable;
-        //        $dataMulai +=1;
-        //        $queryLimit  = " limit $dataMulai,$limitTable";
-        //     }
-        // }
-        // if (!empty($sorter)) {
-        //   $kondisiSort = "ORDER BY $sorter $ascending";
-        // }
-        $cek = "select * from $this->tableName $kondisi";
-        $content=array('tableContent' => $this->generateTable($kondisi));
-        // $getData = $this->sqlQuery("select * from $tableName $kondisi $kondisiSort $queryLimit");
+      case 'variable':{
 
-  		break;
-  		}
-      case 'statusServer':{
-        $getInfoServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$id'"));
-        foreach ($getInfoServer as $key => $value) {
-            $$key = $value;
-        }
-        $content = array(
-                          'statusPing' => $this->pingAddress($alamat_ip),
-                          'apacheStatus' => $this->apacheStatus($alamat_ip),
-                          'osName' => $this->osName($id),
-                          'memorySize' => $this->memorySize($id),
-                          'diskSize' => $this->diskSize($id),
-                        );
-  		break;
-  		}
-      case 'graphServerChanged':{
-        $arrayOptions = array(
-          'memoryUsage' => $checkBoxMemoryUsage,
-          'cpuUsage' => $checkBoxCpuUsage,
-          'diskUsage' => $checkBoxDiskUsage,
-        );
-        $cek = $this->loadScript().$this->statistikServer($idServer,$optionStatistik,$dateRange,$arrayOptions);
-  		break;
-  		}
-      case 'optionsGraphChanged':{
-        $dateRange = "<input type='text' name='kurunWaktu$idServer' id='kurunWaktu$idServer' placeholder='Filter Tanggal' class='float-left mrg10R form-control hasDatepicker' >";
-        $loadScript = "<script type='text/javascript' src='assets/widgets/daterangepicker/daterangepicker.js'></script>
-        <script type='text/javascript' src='assets/widgets/daterangepicker/moment.js'></script>
-        <script type='text/javascript'>
-            $('#kurunWaktu$idServer').daterangepicker({
-                format: 'DD-MM-YYYY'
-            });
-        </script>
-        ";
-        if($optionStatistik =='hari ini' || $optionStatistik =='bulanan'){
-          $loadScript == "";
-          $dateRange = "<input type='text' name='kurunWaktu$idServer' id='kurunWaktu$idServer' placeholder='Filter Tanggal' class='float-left mrg10R form-control hasDatepicker' disabled >";
-        }
-        $content = $loadScript.$dateRange;
-  		break;
-  		}
-      case 'rebootServer':{
-        $this->rebootServer($id);
-  		break;
-  		}
-      case 'baseBigFile':{
-        $path = 'release.zip';
-        $type = pathinfo($path, PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
-        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-        $content = $base64;
-  		break;
-  		}
-      case 'killApache':{
-        $this->killApache($id);
-  		break;
-  		}
-      case 'lifeApache':{
-        $this->lifeApache($id);
-  		break;
-  		}
-      case 'getInfoServer':{
-          $getDataServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$idServer'"));
-          $arrayFileSystem = array();
-          $getPartisi = str_replace('{"FileSystem":"Filesystem","Size":"Size","Used":"Used","Free":"Avail","Persen":"Use%","Mounted":"Mounted"},',"",$this->getDetailDisk($idServer));
-          $arrayDisk = json_decode($getPartisi);
-          for ($i=0; $i < sizeof($arrayDisk) ; $i++) {
-              $arrayFileSystem[] = array($arrayDisk[$i]->FileSystem,$arrayDisk[$i]->FileSystem." | ".$arrayDisk[$i]->Size);
-          }
-
-          $comboDisk = $this->cmbArray("fileSystem",$fileSystem,$arrayFileSystem,"-- File System --","class='form-control' ");
-          $content = array(
-                              'processor' => $this->getProcessor($idServer),
-                              'kernel' => $this->getKernel($idServer),
-                              'operationSystem' => $this->getOperationSystem($idServer),
-                              'RAM' => $this->getRamSize($idServer),
-                              'diskSize' => $this->getDiskSize($idServer),
-                              'statusPing' => $this->pingAddress($getDataServer['alamat_ip']),
-                              'apacheStatus' => $this->apacheStatus($getDataServer['alamat_ip']),
-                           );
-           if($this->sqlRowCount($this->sqlQuery("select * from info_server where id_server = '$idServer'")) == 0){
-              $dataInfoServer = array(
-                                        'id_server' => $idServer,
-                                        'processor' => $content['processor'],
-                                        'kernel' => $content['kernel'],
-                                        'os' => $content['operationSystem'],
-                                        'ram' => $content['RAM'],
-                                        'harddisk' => $getPartisi,
-                                        'server_status' => $content['statusPing'],
-                                        'web_status' => $content['apacheStatus'],
-                                    );
-              $query = $this->sqlInsert("info_server",$dataInfoServer);
-              $this->sqlQuery($query);
-           }else{
-             $dataInfoServer = array(
-                                       'processor' => $content['processor'],
-                                       'kernel' => $content['kernel'],
-                                       'os' => $content['operationSystem'],
-                                       'ram' => $content['RAM'],
-                                       'harddisk' => $getPartisi,
-                                       'server_status' => $content['statusPing'],
-                                       'web_status' => $content['apacheStatus'],
-                                   );
-              $query = $this->sqlUpdate("info_server",$dataInfoServer,"id_server = '$idServer'");
-              $this->sqlQuery($query);
-           }
-           $arrayOptions = array(
-             array('hari ini','HARI INI'),
-             array('harian','HARIAN'),
-             array('mingguan','MINGGUAN'),
-             array('bulanan','BULANAN'),
-           );
-           $getInfoServer = $this->sqlArray($this->sqlQuery("select * from info_server where id_server = '$idServer'"));
-           $formFields = array(
-       			'serverName' => array(
-       						'label'=>"Server Alias",
-       						'labelWidth'=>3,
-       						'value'=>$getDataServer['alias'],
-       						 ),
-       			'ipServer' => array(
-       						'label'=>"IP",
-       						'labelWidth'=>3,
-       						'value'=>$getDataServer['alamat_ip'],
-       						 ),
-       			'kernelSever' => array(
-       						'label'=>"Kernel",
-       						'labelWidth'=>3,
-       						'value'=>$getInfoServer['kernel'],
-       						 ),
-       			'osServer' => array(
-       						'label'=>"Operation System",
-       						'labelWidth'=>3,
-       						'value'=>$getInfoServer['os'],
-       						 ),
-       			'processorServer' => array(
-       						'label'=>"Processor",
-       						'labelWidth'=>3,
-       						'value'=>$getInfoServer['processor'],
-       						 ),
-       			'diskSize' => array(
-       						'label'=>"Disk Size",
-       						'labelWidth'=>3,
-       						'value'=>$comboDisk,
-       						 ),
-       			'memorySizeServer' => array(
-       						'label'=>"RAM",
-       						'labelWidth'=>3,
-       						'value'=>$getInfoServer['ram'],
-       						 ),
-             'serverStatus' => array(
-       						'label'=>"Server Status",
-       						'labelWidth'=>3,
-       						'value'=> $this->switchOption("serverStatus$id",$getInfoServer['server_status'],"disabled"),
-       						 ),
-       			'webStatus' => array(
-       						'label'=>"Web Status",
-       						'labelWidth'=>3,
-       						'value'=>$this->switchOption("webStatus$id",$getInfoServer['web_status'],"onchange=$this->Prefix.webStatusChanged($id)"),
-       						 ),
-             'optionStatistik' => array(
-                   'label'=>"Graph Server",
-                   'labelWidth'=>3,
-                   'value'=> $this->cmbArray("optionStatistik$id",$optionStatistik,$arrayOptions,"-- OPTION --","class='form-control' onchange=$this->Prefix.optionsGraphChanged($id);  ")
-                    ),
-            'filterTanggal' => array(
-      						'label'=>"Filter Tanggal",
-      						'labelWidth'=>3,
-                  'value'=> "<span id='spanKurunWaktu$id'> <input type='text' name='kurunWaktu$id' id='kurunWaktu$id' placeholder='Filter Tanggal' class='float-left mrg10R form-control hasDatepicker' > </span>"
-      						 ),
-             'optionData' => array(
-                   'label'=>"",
-                   'labelWidth'=>3,
-                   'value'=> $this->checkBox("checkBoxMemoryUsage$id","true","checked","Memory")."&nbsp".$this->checkBox("checkBoxCpuUsage$id","true","checked","CPU")."&nbsp".$this->checkBox("checkBoxDiskUsage$id","true","checked","DISK")
-                    ),
-       			);
-
-           $cek = "
-               <div class='content-box'>
-                   <h3 class='content-box-header bg-primary'>
-                       <span class=' pull-right' style='cursor:pointer;' onclick=$this->Prefix.getInfoServer($idServer);>
-                           <i class='glyph-icon icon-refresh'></i>
-                       </span>".$getDataServer['nama_server']."
-                       </h3>
-
-                   <div class='content-box-wrapper'>
-                     ".$this->formGenerator($formFields)."
-                     ".$this->loadScript($formFields)."
-                     <div id='graphServer$id'>
-                      ".$this->statistikServer($idServer,$optionStatistik)."
-                     </div>
-                   </div>
-               </div>
-           ";
-  		break;
-  		}
-
+        break;
+      }
       default:{
         $content = "API NOT FOUND";
       break;
@@ -261,8 +41,6 @@ class dashboard extends baseObject{
     $checkList ='"glyph-icon icon-check"';
     return "
     <script type='text/javascript' src='js/dashboard.js'></script>
-    <script src='plugins/contextMenu/contextMenu.min.js'></script>
-    <link rel='stylesheet' type='text/css' href='plugins/contextMenu/contextMenu.min.css'>
     <script type='text/javascript' src='assets/widgets/input-switch/inputswitch.js'></script>
     <script type='text/javascript' src='assets/widgets/daterangepicker/daterangepicker.js'></script>
     <script type='text/javascript' src='assets/widgets/daterangepicker/moment.js'></script>
@@ -272,6 +50,9 @@ class dashboard extends baseObject{
         $('.input-switch').bootstrapSwitch();
         $('.custom-checkbox').uniform();
         $('.checker span').append('<i class=$checkList></i>');
+        $('.accordion').accordion({
+            heightStyle: 'content'
+        });
       });
 
 
@@ -288,7 +69,7 @@ class dashboard extends baseObject{
   function pageContent(){
     $pageContent = "
 
-      ".$this->listPanelServer()."
+      ".$this->dashBoardContent()."
       <div id='tempatLoading'></div>
     ";
     return $pageContent;
@@ -419,108 +200,66 @@ class dashboard extends baseObject{
     ";
     return $htmlTable;
   }
-  function listPanelServer(){
-    $getDataServer = $this->sqlQuery("select * from ref_server  ");
-    while ($dataServer = $this->sqlArray($getDataServer)) {
-      foreach ($dataServer as $key => $value) {
-         $$key = $value;
-      }
-      $getInfoServer = $this->sqlArray($this->sqlQuery("select * from info_server where id_server = '$id'"));
-      $arrayFileSystem = array();
-      $getPartisi = $getInfoServer['harddisk'];
-      $arrayDisk = json_decode($getPartisi);
-      for ($i=0; $i < sizeof($arrayDisk) ; $i++) {
-          $arrayFileSystem[] = array($arrayDisk[$i]->FileSystem,$arrayDisk[$i]->FileSystem." | ".$arrayDisk[$i]->Size);
-      }
-      $arrayOptions = array(
-        array('hari ini','HARI INI'),
-        array('harian','HARIAN'),
-        array('bulanan','BULANAN'),
-      );
-      $comboDisk = $this->cmbArray("fileSystem",$fileSystem,$arrayFileSystem,"-- File System --","class='form-control' ");
-      $formFields = array(
-  			'serverName' => array(
-  						'label'=>"Server Alias",
-  						'labelWidth'=>3,
-  						'value'=>$alias,
-  						 ),
-  			'ipServer' => array(
-  						'label'=>"IP",
-  						'labelWidth'=>3,
-  						'value'=>$alamat_ip,
-  						 ),
-  			'kernelSever' => array(
-  						'label'=>"Kernel",
-  						'labelWidth'=>3,
-  						'value'=>$getInfoServer['kernel'],
-  						 ),
-  			'osServer' => array(
-  						'label'=>"Operation System",
-  						'labelWidth'=>3,
-  						'value'=>$getInfoServer['os'],
-  						 ),
-  			'processorServer' => array(
-  						'label'=>"Processor",
-  						'labelWidth'=>3,
-  						'value'=>$getInfoServer['processor'],
-  						 ),
-  			'diskSize' => array(
-  						'label'=>"Disk Size",
-  						'labelWidth'=>3,
-  						'value'=>$comboDisk,
-  						 ),
-  			'memorySizeServer' => array(
-  						'label'=>"RAM",
-  						'labelWidth'=>3,
-  						'value'=>$getInfoServer['ram'],
-  						 ),
-  			'serverStatus' => array(
-  						'label'=>"Server Status",
-  						'labelWidth'=>3,
-  						'value'=> $this->switchOption("serverStatus$id",$getInfoServer['server_status'],"disabled")."&nbsp <button type='button' class='btn btn-primary' onclick=$this->Prefix.rebootServer($id);>Reboot</button> ",
-  						 ),
-  			'webStatus' => array(
-  						'label'=>"Web Status",
-  						'labelWidth'=>3,
-  						'value'=>$this->switchOption("webStatus$id",$getInfoServer['web_status'],"onchange$this->Prefix.webStatusChanged($id,this.checked) "),
-  						 ),
-  			'optionStatistik' => array(
-  						'label'=>"Graph Server",
-  						'labelWidth'=>3,
-  						'value'=> $this->cmbArray("optionStatistik$id",$optionStatistik,$arrayOptions,"-- OPTION --","class='form-control'  onchange=$this->Prefix.optionsGraphChanged($id); ")
-  						 ),
-  			'filterTanggal' => array(
-  						'label'=>"Filter Tanggal",
-  						'labelWidth'=>3,
-  						'value'=> "<span id='spanKurunWaktu$id'> <input type='text' name='kurunWaktu$id' id='kurunWaktu$id' placeholder='Filter Tanggal' class='float-left mrg10R form-control hasDatepicker' disabled > </span>"
-  						 ),
-  			'optionData' => array(
-  						'label'=>"",
-  						'labelWidth'=>3,
-  						'value'=> $this->checkBox("checkBoxMemoryUsage$id","true","checked","Memory")."&nbsp".$this->checkBox("checkBoxCpuUsage$id","true","checked","CPU")."&nbsp".$this->checkBox("checkBoxDiskUsage$id","true","checked","DISK")
-  						 ),
-  			);
-      $content .= "
-      <div class='col-md-6' id='panelServer$id'>
-          <div class='content-box'>
-              <h3 class='content-box-header bg-primary'>
-                  <span class=' pull-right' style='cursor:pointer;' onclick=$this->Prefix.getInfoServer($id);>
-                      <i class='glyph-icon icon-refresh'></i>
-                  </span>$nama_server
-                  </h3>
+  function dashBoardContent(){
 
-              <div class='content-box-wrapper'>
-                ".$this->formGenerator($formFields)."
-                <div id='graphServer$id'>
-                  ".$this->statistikServer($id,"hari ini")."
+      $content .= "
+      <div class='panel'>
+        <div class='panel-body'>
+            <h3 class='title-hero'>
+                Dashboard
+            </h3>
+            <div class='example-box-wrapper'>
+                <ul class='list-group list-group-separator row list-group-icons'>
+                    <li class='col-md-3 active'>
+                        <a href='#tab-example-1' data-toggle='tab' class='list-group-item'>
+                            <i class='glyph-icon font-red icon-dashboard'></i>
+                            STATUS
+                        </a>
+                    </li>
+                    <li class='col-md-3'>
+                        <a href='#tab-example-2' data-toggle='tab' class='list-group-item'>
+                            <i class='glyph-icon icon-dashboard'></i>
+                            Top Score
+                        </a>
+                    </li>
+                    <li class='col-md-3 '>
+                        <a href='#tab-example-3' data-toggle='tab' class='list-group-item'>
+                            <i class='glyph-icon font-primary icon-camera'></i>
+                            Histori Jawaban
+                        </a>
+                    </li>
+                    <li class='col-md-3'>
+                        <a href='#tab-example-4' data-toggle='tab' class='list-group-item'>
+                            <i class='glyph-icon font-blue-alt icon-globe'></i>
+                            Histori Iklan
+                        </a>
+                    </li>
+                </ul>
+                <div class='tab-content'>
+                    <div class='tab-pane fade active in' id='tab-example-1'>
+                      <div class='content-box-wrapper'>
+                        <div id='graphServer$id'>
+                          ".$this->statistikServer($id,"hari ini")."
+                        </div>
+                      </div>
+                    </div>
+                    <div class='tab-pane fade ' id='tab-example-2'>
+                        ".$this->contentTopScore()."
+                    </div>
+                    <div class='tab-pane fade' id='tab-example-3'>
+                        ".$this->contentHistoriJawaban()."
+                    </div>
+                    <div class='tab-pane fade' id='tab-example-4'>
+                        ".$this->contentHistoriIklan()."
+                    </div>
                 </div>
-              </div>
-          </div>
-      </div>";
-    }
+            </div>
+        </div>
+    </div>
+      ";
     return $content;
   }
-  function statistikServer($idServer,$option,$dateRange,$optionStatistik){
+  function statistikServer($idServer,$option,$dateRange = "",$optionStatistik= ""){
     if(!$optionStatistik){
       $optionStatistik = array(
         'memoryUsage' => 'on',
@@ -858,162 +597,78 @@ class dashboard extends baseObject{
     return $content;
   }
 
-  function pingAddress($ip) {
-      $pingresult = exec("/bin/ping -c2 -w2 $ip", $outcome, $status);
-      if ($status==0) {
-      $status = "LIVE";
-      } else {
-      $status = "DEAD";
-      }
-      $message = $status;
-      return $message;
-  }
-  function apacheStatus($url) {
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0)");
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);
-    curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-    $rt = curl_exec($ch);
-    $info = curl_getinfo($ch);
-    $info = $info["http_code"];
-    // if($info == 200 ){
-    //   $status = "<span style='text-color:green;'>ACTIVE</span>";
-    // }
-    // if($info == 504 ){
-    //   $status = "<span style='text-color:red;'>DIE</span>";
-    // }
-    // if($info == 500 ){
-    //   $status = "<span style='text-color:green;'>ACTIVE</span>";
-    // }
-    // if($info == 302 ){
-    //   $status = "<span style='text-color:green;'>ACTIVE</span>";
-    // }
-    // if($info == 404 ){
-    //   $status = "<span style='text-color:green;'>ACTIVE</span>";
-    // }
-    $status = "DIE";
-    if($info == 200 ){
-      $status = "ACTIVE";
+  function tableTopScore($dataSession){
+    $no = 1;
+    $getDataTopScore = $this->sqlQuery("select * from top_score where id_session = '".$dataSession['id']."' order by jumlah_point desc");
+    while ($dataTopScore = $this->sqlArray($getDataTopScore)) {
+      $getDataMember = $this->sqlArray($this->sqlQuery("select * from member where id = '".$dataTopScore['id_member']."'"));
+      $listTopScore .= "
+      <tr>
+          <td> $no </td>
+          <td>".$getDataMember['nama']."</td>
+          <td style='text-align:right;'>".$this->numberFormat($dataTopScore['jumlah_point'])."</td>
+      </tr>
+      ";
+      $no += 1;
     }
-    if($info == 504 ){
-      $status = "DIE";
-    }
-    if($info == 500 ){
-      $status = "ACTIVE";
-    }
-    if($info == 302 ){
-      $status = "ACTIVE";
-    }
-    if($info == 404 ){
-      $status = "ACTIVE";
-    }
-    return $status;
-  }
-  function killApache($id) {
-    $getDataServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$id'"));
-    $sshConnection = $this->sshConnect($getDataServer['alamat_ip'],$getDataServer['port_ftp']);
-    $this->sshLogin($sshConnection,$getDataServer['user_ftp'],$getDataServer['password_ftp']);
-    $this->sqlQuery("update info_server set web_status = 'DIE' where id_server = '$id'");
-    return $this->sshCommand($sshConnection,"service apache2 stop");
-  }
-  function lifeApache($id) {
-    $getDataServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$id'"));
-    $sshConnection = $this->sshConnect($getDataServer['alamat_ip'],$getDataServer['port_ftp']);
-    $this->sshLogin($sshConnection,$getDataServer['user_ftp'],$getDataServer['password_ftp']);
-    $this->sqlQuery("update info_server set web_status = 'ACTIVE' where id_server = '$id'");
-    return $this->sshCommand($sshConnection,"service apache2 start");
-  }
-  function rebootServer($id) {
-    $getDataServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$id'"));
-    $sshConnection = $this->sshConnect($getDataServer['alamat_ip'],$getDataServer['port_ftp']);
-    $this->sshLogin($sshConnection,$getDataServer['user_ftp'],$getDataServer['password_ftp']);
-    return $this->sshCommand($sshConnection,"reboot");
-  }
-  function memorySize($id) {
-    $getDataServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$id'"));
-    $sshConnection = $this->sshConnect($getDataServer['alamat_ip'],$getDataServer['port_ftp']);
-    $this->sshLogin($sshConnection,$getDataServer['user_ftp'],$getDataServer['password_ftp']);
-    return $this->numberFormat($this->sshCommand($sshConnection,"echo $(awk '/^MemTotal:/{print $2}' /proc/meminfo)"))." Byte";
-  }
-  function diskSize($id) {
-    $getDataServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$id'"));
-    $sshConnection = $this->sshConnect($getDataServer['alamat_ip'],$getDataServer['port_ftp']);
-    $this->sshLogin($sshConnection,$getDataServer['user_ftp'],$getDataServer['password_ftp']);
-    // return $this->numberFormat(str_replace("(","",$this->sshCommand($sshConnection,"dmesg | grep blocks | grep GB | grep -o -P '(?<=blocks:).*(?=GB)'")))." GB";
-    return $this->numberFormat($this->sshCommand($sshConnection,"blockdev --getsize64 /dev/sda"))." Byte";
-  }
-  function osName($id) {
-    $getDataServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$id'"));
-    $sshConnection = $this->sshConnect($getDataServer['alamat_ip'],$getDataServer['port_ftp']);
-    $this->sshLogin($sshConnection,$getDataServer['user_ftp'],$getDataServer['password_ftp']);
-    return $this->sshCommand($sshConnection,"cat /etc/issue");
-  }
-  function pageShowNew(){
-    $pageShow = "
-    ".$this->loadJSandCSS()."
-        <body class='fixed-header'>
-        <div id='loading'>
-            <div class='spinner'>
-                <div class='bounce1'></div>
-                <div class='bounce2'></div>
-                <div class='bounce3'></div>
-            </div>
-        </div>
-        <div id='page-wrapper'>
-        ".$this->emptyMenuBar()."
-        ".$this->sidebar()."
-        <div id='page-content-wrapper'>
-            <div id='page-content'>
-              <div class='container'>
-                ".$this->formBaru()."
-              </div>
-            </div>
-        </div>
-      </div>
-      </body>
-      </html>
-          ";
+    $content = "
+    <table class='table table-condensed'>
+        <thead>
+        <tr>
+            <th style='width:20px !important;'>No</th>
+            <th style='text-align:center;'>Nama</th>
+            <th style='text-align:center;'>Score</th>
+        </tr>
+        </thead>
+        <tbody>
+        $listTopScore
 
-    return $pageShow;
+        </tbody>
+    </table>
+
+    ";
+
+
+    return $content ;
   }
-  function getProcessor($id) {
-    $getDataServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$id'"));
-    $sshConnection = $this->sshConnect($getDataServer['alamat_ip'],$getDataServer['port_ftp']);
-    $this->sshLogin($sshConnection,$getDataServer['user_ftp'],$getDataServer['password_ftp']);
-    $modelName = '"MODELNAME=\"';
-    $kutip = '"';
-    $modelNameKutip = '"model name"';
-    return $this->sshCommand($sshConnection,"echo -n $modelName $kutip
-    grep -m 1 $modelNameKutip /proc/cpuinfo | cut -d: -f2 | sed -e 's/^ *//' | sed -e 's/$/$kutip/'");
+  function contentTopScore(){
+
+    $getDataSession = $this->sqlQuery("select * from sesion order by id desc");
+    while ($dataSession = $this->sqlArray($getDataSession)) {
+      $controllerSession = "controllerSession".$dataSession['id'];
+      $clientSession = md5($controllerSession."_".md5($dataSession['judul']));
+      $listTopScore .="
+      <h3 class='ui-accordion-header ui-state-default ui-accordion-icons ui-corner-all' role='tab' id='$controllerSession' aria-controls='$clientSession' aria-selected='false' aria-expanded='false' tabindex='-1'><span class='ui-accordion-header-icon ui-icon ui-icon-triangle-1-e'></span>".$dataSession['judul']."</h3>
+      <div class='ui-accordion-content ui-helper-reset ui-widget-content ui-corner-bottom' id='$clientSession' aria-labelledby='$controllerSession' role='tabpanel' style='display: none;' aria-hidden='true'>
+        ".$this->tableTopScore($dataSession)."
+      </div>
+      ";
+    }
+
+      $content = "
+      <div class='panel'>
+        <div class='panel-body'>
+            <div class='example-box-wrapper'>
+                <div class='accordion ui-accordion ui-widget ui-helper-reset' role='tablist'>
+                  $listTopScore
+                </div>
+            </div>
+        </div>
+    </div>
+
+      ";
+
+
+    return $content;
   }
-  function getOperationSystem($id) {
-    $getDataServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$id'"));
-    $sshConnection = $this->sshConnect($getDataServer['alamat_ip'],$getDataServer['port_ftp']);
-    $this->sshLogin($sshConnection,$getDataServer['user_ftp'],$getDataServer['password_ftp']);
-    return $this->sshCommand($sshConnection,"cat /etc/issue");
+  function contentHistoriJawaban(){
+    $content = "jawaban";
+
+    return $content;
   }
-  function getRamSize($id) {
-    $getDataServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$id'"));
-    $sshConnection = $this->sshConnect($getDataServer['alamat_ip'],$getDataServer['port_ftp']);
-    $this->sshLogin($sshConnection,$getDataServer['user_ftp'],$getDataServer['password_ftp']);
-    return $this->numberFormat($this->sshCommand($sshConnection,"echo $(awk '/^MemTotal:/{print $2}' /proc/meminfo)"))." Byte";
-  }
-  function getDiskSize($id) {
-    $getDataServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$id'"));
-    $sshConnection = $this->sshConnect($getDataServer['alamat_ip'],$getDataServer['port_ftp']);
-    $this->sshLogin($sshConnection,$getDataServer['user_ftp'],$getDataServer['password_ftp']);
-    return $this->numberFormat($this->sshCommand($sshConnection,"blockdev --getsize64 /dev/sda"))." Byte";
-  }
-  function getKernel($id) {
-    $getDataServer = $this->sqlArray($this->sqlQuery("select * from ref_server where id = '$id'"));
-    $sshConnection = $this->sshConnect($getDataServer['alamat_ip'],$getDataServer['port_ftp']);
-    $this->sshLogin($sshConnection,$getDataServer['user_ftp'],$getDataServer['password_ftp']);
-    return $this->sshCommand($sshConnection,"uname -a");
+  function contentHistoriIklan(){
+    $content = "iklan";
+    return $content;
   }
   function getMonth($tanggal){
       $explodeTanggal = explode("-",$tanggal);

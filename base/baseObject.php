@@ -217,6 +217,7 @@ class baseObject extends Config{
     <link rel='stylesheet' type='text/css' href='assets/snippets/todo.css'>
     <link rel='stylesheet' type='text/css' href='assets/snippets/user-profile.css'>
     <link rel='stylesheet' type='text/css' href='assets/snippets/mobile-navigation.css'>
+    <link rel='stylesheet' type='text/css' href='assets/widgets/accordion-ui/accordion.css'>
     <link rel='stylesheet' type='text/css' href='https://lipis.github.io/bootstrap-sweetalert/dist/sweetalert.css'>
 
 
@@ -265,6 +266,9 @@ class baseObject extends Config{
     <script type='text/javascript' src='assets/js-init/widgets-init.js'></script>
     <script type='text/javascript' src='assets/themes/admin/layout.js'></script>
     <script type='text/javascript' src='assets/widgets/theme-switcher/themeswitcher.js'></script>
+    <script type='text/javascript' src='assets/widgets/tabs-ui/tabs.js'></script>
+    <script type='text/javascript' src='assets/widgets/tabs/tabs.js'></script>
+    <script type='text/javascript' src='assets/widgets/accordion-ui/accordion.js'></script>
     <script type='text/javascript' src='js/baseObject.js'></script>
     <script type='text/javascript' src='js/base64.js'></script>
     <script type='text/javascript' src='https://lipis.github.io/bootstrap-sweetalert/dist/sweetalert.js'></script>
