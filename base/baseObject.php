@@ -414,6 +414,18 @@ class baseObject extends Config{
                 <span>Hadiah</span>
             </a>
             "),
+        array("refAds","
+            <a href='pages.php?page=refAds' title='Ads'>
+                <i class='glyph-icon icon-bolt'></i>
+                <span>Ads</span>
+            </a>
+            "),
+        array("refBerita","
+            <a href='pages.php?page=refBerita' title='Ads'>
+                <i class='glyph-icon icon-typicons-news'></i>
+                <span>Berita</span>
+            </a>
+            "),
 
         array("logout","
             <a href='pages.php?page=logout' title='bandingDatabaseServer'>

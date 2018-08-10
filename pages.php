@@ -34,6 +34,16 @@ switch ($pages) {
     include "pages/refHadiah/refHadiah.php";
     break;
   }
+  case 'refAds':{
+    checkLogin();
+    include "pages/refAds/refAds.php";
+    break;
+  }
+  case 'refBerita':{
+    checkLogin();
+    include "pages/refBerita/refBerita.php";
+    break;
+  }
 
   case 'logout':{
     $_SESSION['username'] = '';
