@@ -313,7 +313,7 @@ class refAds extends baseObject{
                         ".$this->cmbArray("jenisIklan","",array(
                           array("BANNER","BANNER"),
                           array("POPUP","POPUP"),
-                          array("POPUP","POPUP"),
+                          array("VIDEO","VIDEO"),
                         ),"-- JENIS IKLAN --")."
                       </div>
                     </div>
@@ -386,10 +386,10 @@ class refAds extends baseObject{
                     <div class='row'>
                       <label class='col-sm-3 control-label' style='margin-top:6px;'>Jenis Iklan</label>
                       <div class='col-sm-9'>
-                        ".$this->cmbArray("jenisIklan","",array(
+                        ".$this->cmbArray("jenisIklan",$getDataEdit['jenis_iklan'],array(
                           array("BANNER","BANNER"),
                           array("POPUP","POPUP"),
-                          array("POPUP","POPUP"),
+                          array("VIDEO","VIDEO"),
                         ),"-- JENIS IKLAN --","class='form-control'")."
                       </div>
                     </div>
