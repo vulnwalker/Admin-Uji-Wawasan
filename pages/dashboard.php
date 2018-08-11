@@ -53,6 +53,10 @@ class dashboard extends baseObject{
         $('.accordion').accordion({
             heightStyle: 'content'
         });
+
+
+
+
       });
 
 
@@ -218,19 +222,19 @@ class dashboard extends baseObject{
                     </li>
                     <li class='col-md-3'>
                         <a href='#tab-example-2' data-toggle='tab' class='list-group-item'>
-                            <i class='glyph-icon icon-dashboard'></i>
+                            <i class='glyph-icon icon-glass'></i>
                             Top Score
                         </a>
                     </li>
                     <li class='col-md-3 '>
                         <a href='#tab-example-3' data-toggle='tab' class='list-group-item'>
-                            <i class='glyph-icon font-primary icon-camera'></i>
+                            <i class='glyph-icon font-primary icon-elusive-doc'></i>
                             Histori Jawaban
                         </a>
                     </li>
                     <li class='col-md-3'>
                         <a href='#tab-example-4' data-toggle='tab' class='list-group-item'>
-                            <i class='glyph-icon font-blue-alt icon-globe'></i>
+                            <i class='glyph-icon font-blue-alt icon-iconic-video'></i>
                             Histori Iklan
                         </a>
                     </li>
@@ -239,7 +243,7 @@ class dashboard extends baseObject{
                     <div class='tab-pane fade active in' id='tab-example-1'>
                       <div class='content-box-wrapper'>
                         <div id='graphServer$id'>
-                          ".$this->statistikServer($id,"hari ini")."
+                          ".$this->grafikIklan()."
                         </div>
                       </div>
                     </div>
@@ -259,344 +263,137 @@ class dashboard extends baseObject{
       ";
     return $content;
   }
-  function statistikServer($idServer,$option,$dateRange = "",$optionStatistik= ""){
-    if(!$optionStatistik){
-      $optionStatistik = array(
-        'memoryUsage' => 'on',
-        'cpuUsage' => 'on',
-        'diskUsage' => 'on',
-      );
-    }
-    $nomorUrut = 0;
-    if($option == 'hari ini'){
-      $getLogServer = $this->sqlQuery("select * from log_server where id_server = '$idServer' and tanggal = '".date("Y-m-d")."'");
-      while ($dataLogServer = $this->sqlArray($getLogServer)) {
-          $decodedLog = json_decode($dataLogServer['result']);
-          $memoryUsage = str_replace("%","",$decodedLog->memoryUsage);
-          $cpuUsage = str_replace("%","",$decodedLog->cpuUsage);
-          $diskUsage = str_replace("%","",$decodedLog->diskUsage);
-          $tanggalLog = $this->generateDate($dataLogServer['tanggal'])." ".$dataLogServer['jam'];
-          $pushMemory = "memoryUsage.push([$nomorUrut, $memoryUsage]);";
-          $pushCPU = "  cpuUsage.push([$nomorUrut, $cpuUsage]);";
-          $pushDisk = "diskUsage.push([$nomorUrut, $diskUsage]);";
-          if(empty($optionStatistik['memoryUsage'])){
-            $pushMemory = "";
-          }
-          if(empty($optionStatistik['cpuUsage'])){
-            $pushCPU = "";
-          }
-          if(empty($optionStatistik['diskUsage'])){
-            $pushDisk = "";
-          }
-          $pushArrayStatistik .= "
-          $pushMemory
-          $pushCPU
-          $pushDisk
-          tanggalMemoryUsage.push(['$tanggalLog']);
-          tanggalCpuUsage.push(['$tanggalLog']);
-          tanggalDiskUsage.push(['$tanggalLog']);
-          ";
-          if($nomorUrut % 4 == 0){
-            $arrayListJam[] = "[$nomorUrut,'".$dataLogServer['jam']."']";
-          }
-          $nomorUrut +=1;
-      }
-      $listJam = implode(",",$arrayListJam);
-      if(!empty($optionStatistik['memoryUsage'])){
-        $arrayFilterCheckBox[] = "{ data: memoryUsage, label: 'Memory Usage',color:'red', 'Tanggal' : tanggalMemoryUsage }";
-      }
-      if(!empty($optionStatistik['cpuUsage'])){
-        $arrayFilterCheckBox[] = "{ data: cpuUsage, label: 'CPU Usage',color:'blue', 'Tanggal' : tanggalCpuUsage }";
-      }
-      if(!empty($optionStatistik['diskUsage'])){
-        $arrayFilterCheckBox[] = "{ data: diskUsage, label: 'Disk Usage',color:'green', 'Tanggal' : tanggalDiskUsage }";
-      }
-      $implodeFilterCheckBox = implode(",",$arrayFilterCheckBox);
-      $kamusData = "
-                    xaxis: {
-                      ticks: [$listJam]
-                    },";
-      $content = "<div class='panel'>
-                  <div class='panel-body'>
-                      <h3 class='title-hero'>
-                      Graph Server Condition &nbsp<input class='btn btn-primary' type='button' value='Show Graph' onclick=$this->Prefix.showGraph($idServer) >
-                      </h3>
-                      <div class='example-box-wrapper'>
-                          <div id='grapikServer$idServer' class='mrg20B' style='width: 100%; height: 300px; padding: 0px; position: relative;'>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-              <script type='text/javascript'>
-              $(function() {
-                  var memoryUsage = [], cpuUsage = [], diskUsage = [];
-                  var tanggalMemoryUsage = [], tanggalCpuUsage = [], tanggalDiskUsage = [];
-
-                  $pushArrayStatistik
-
-                  var plot = $.plot($('#grapikServer$idServer'),
-                      [
-                        $implodeFilterCheckBox
-                      ], {
-                          series: {
-                              shadowSize: 0,
-                              lines: {
-                                  show: true,
-                                  lineWidth: 2
-                              }
-                          },
-                          grid: {
-                              labelMargin: 10,
-                              hoverable: true,
-                              clickable: true,
-                              borderWidth: 1,
-                              borderColor: 'rgba(82, 167, 224, 0.06)'
-                          },
-                          legend: {
-                              backgroundColor: '#fff'
-                          },
-                          yaxis: { tickColor: 'rgba(0, 0, 0, 0.06)',  min : 0, max : 100, font: {color: 'rgba(0, 0, 0, 0.4)'}},
-                          $kamusData
-                          colors: [getUIColor('default'), getUIColor('gray'), getUIColor('blue')],
-                          tooltip: true,
-                      });
-
-                  $('#grapikServer$idServer').bind('plotclick', function (event, pos, item) {
-                  });
-              });
-              </script>
+  function grafikIklan(){
+    $content = "
+    <div class='panel-body'>
+        <h3 class='title-hero'>
+            Graph Ads Loaded
+        </h3>
+        <div class='example-box-wrapper'>
+          <div id='data-example-1' class='mrg20B' style='width: 100%; height: 300px;'></div>
+        </div>
+    </div>
 
 
-              ";
-    }elseif($option == 'harian'){
-      $arrayRangeDate = explode(" - ",$dateRange);
-      $getLogServer = $this->sqlQuery("select * from log_server where id_server = '$idServer' and tanggal <= '".$this->generateDate($arrayRangeDate[1])."' and tanggal >= '".$this->generateDate($arrayRangeDate[0])."'");
-      while ($dataLogServer = $this->sqlArray($getLogServer)) {
-            $decodedLog = json_decode($dataLogServer['result']);
-            $memoryUsage = str_replace("%","",$decodedLog->memoryUsage);
-            $cpuUsage = str_replace("%","",$decodedLog->cpuUsage);
-            $diskUsage = str_replace("%","",$decodedLog->diskUsage);
-            $tanggalLog = $this->generateDate($dataLogServer['tanggal'])." ".$dataLogServer['jam'];
-            $pushMemory = "memoryUsage.push([$nomorUrut, $memoryUsage]);";
-            $pushCPU = "  cpuUsage.push([$nomorUrut, $cpuUsage]);";
-            $pushDisk = "diskUsage.push([$nomorUrut, $diskUsage]);";
-            if(empty($optionStatistik['memoryUsage'])){
-              $pushMemory = "";
+    <script type='text/javascript'>
+    $(function() {
+        var sin = [], cos = [];
+        for (var i = 0; i < 354; i += 31) {
+            sin.push([i, Math.random(i)]);
+            cos.push([i, Math.random(i)]);
+        }
+
+        var plot = $.plot($('#data-example-1'),
+            [{ data: sin, label: 'Ads Showed' }, { data: cos, label: 'Ads Loaded' }], {
+                series: {
+
+                    shadowSize: 0,
+                    lines: {
+                        show: true,
+                        lineWidth: 2
+                    },
+                    points: { show: true }
+                },
+                grid: {
+                    labelMargin: 10,
+                    hoverable: true,
+                    clickable: true,
+                    borderWidth: 1,
+                    borderColor: 'rgba(82, 167, 224, 0.06)'
+                },
+                legend: {
+                    backgroundColor: '#fff'
+                },
+                yaxis: { tickColor: 'rgba(0, 0, 0, 0.06)', font: {color: 'rgba(0, 0, 0, 0.4)'}},
+                xaxis: { tickColor: 'rgba(0, 0, 0, 0.06)', font: {color: 'rgba(0, 0, 0, 0.4)'}},
+                colors: [getUIColor('success'), getUIColor('gray')],
+                tooltip: true,
+                tooltipOpts: {
+                    content: 'x: %x, y: %y'
+                }
+            });
+
+        var previousPoint = null;
+        $('#data-example-1').bind('plothover', function (event, pos, item) {
+            $('#x').text(pos.x.toFixed(2));
+            $('#y').text(pos.y.toFixed(2));
+        });
+
+        $('#data-example-1').bind('plotclick', function (event, pos, item) {
+            if (item) {
+                $('#clickdata').text('You clicked point ' + item.dataIndex + ' in ' + item.series.label + '.');
+                plot.highlight(item.series, item.datapoint);
             }
-            if(empty($optionStatistik['cpuUsage'])){
-              $pushCPU = "";
+        });
+
+
+    });
+
+
+    $(function() {
+        var data = [],
+            totalPoints = 300;
+        function getRandomData() {
+            if (data.length > 0)
+                data = data.slice(1);
+            // Do a random walk
+            while (data.length < totalPoints) {
+                var prev = data.length > 0 ? data[data.length - 1] : 50,
+                    y = prev + Math.random() * 10 - 5;
+                if (y < 0) {
+                    y = 0;
+                } else if (y > 100) {
+                    y = 100;
+                }
+                data.push(y);
             }
-            if(empty($optionStatistik['diskUsage'])){
-              $pushDisk = "";
+            // Zip the generated y values with the x values
+            var res = [];
+            for (var i = 0; i < data.length; ++i) {
+                res.push([i, data[i]])
             }
-            $pushArrayStatistik .= "
-            $pushMemory
-            $pushCPU
-            $pushDisk
-            tanggalMemoryUsage.push(['$tanggalLog']);
-            tanggalCpuUsage.push(['$tanggalLog']);
-            tanggalDiskUsage.push(['$tanggalLog']);
-            ";
-            if($nomorUrut % 96 == 0){
-              $arrayListTanggal[] = "[$nomorUrut,'".$this->generateDate($dataLogServer['tanggal'])."']";
-            }
-            $nomorUrut +=1;
-      }
-      if(!empty($optionStatistik['memoryUsage'])){
-        $arrayFilterCheckBox[] = "{ data: memoryUsage, label: 'Memory Usage',color:'red', 'Tanggal' : tanggalMemoryUsage }";
-      }
-      if(!empty($optionStatistik['cpuUsage'])){
-        $arrayFilterCheckBox[] = "{ data: cpuUsage, label: 'CPU Usage',color:'blue', 'Tanggal' : tanggalCpuUsage }";
-      }
-      if(!empty($optionStatistik['diskUsage'])){
-        $arrayFilterCheckBox[] = "{ data: diskUsage, label: 'Disk Usage',color:'green', 'Tanggal' : tanggalDiskUsage }";
-      }
-      $implodeFilterCheckBox = implode(",",$arrayFilterCheckBox);
-      $listTanggal = implode(",",$arrayListTanggal);
-      $kamusData = "
-                    xaxis: {
-                      ticks: [$listTanggal]
-                    },";
+            return res;
+        }
+        // Set up the control widget
+        var updateInterval = 30;
+        var plot = $.plot('#data-example-3', [ getRandomData() ], {
+            series: {
+                lines: {
+                    show: true,
+                    lineWidth: 2,
+                    fill: 0.5,
+                    fillColor: { colors: [ { opacity: 0.01 }, { opacity: 0.08 } ] }
+                },
+                shadowSize: 0   // Drawing is faster without shadows
+            },
+            grid: {
+                labelMargin: 10,
+                hoverable: true,
+                clickable: true,
+                borderWidth: 1,
+                borderColor: 'rgba(82, 167, 224, 0.06)'
+            },
+            yaxis: {
+                min: 0,
+                max: 120,
+                tickColor: 'rgba(0, 0, 0, 0.06)', font: {color: 'rgba(0, 0, 0, 0.4)'}},
+            xaxis: { show: false },
+            colors: [getUIColor('default'),getUIColor('gray')]
+        });
 
-      $content = "<div class='panel'>
-                  <div class='panel-body'>
-                      <h3 class='title-hero'>
-                      Graph Server Condition &nbsp<input class='btn btn-primary' type='button' value='Show Graph' onclick=$this->Prefix.showGraph($idServer) >
-                      </h3>
-                      <div class='example-box-wrapper'>
-                          <div id='grapikServer$idServer' class='mrg20B' style='width: 100%; height: 300px; padding: 0px; position: relative;'>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-              <script type='text/javascript'>
-              $(function() {
-                  var memoryUsage = [], cpuUsage = [], diskUsage = [];
-                  var tanggalMemoryUsage = [], tanggalCpuUsage = [], tanggalDiskUsage = [];
-
-                  $pushArrayStatistik
-
-                  var plot = $.plot($('#grapikServer$idServer'),
-                      [
-                        $implodeFilterCheckBox
-                      ], {
-                          series: {
-                              shadowSize: 0,
-                              lines: {
-                                  show: true,
-                                  lineWidth: 2
-                              }
-                          },
-                          grid: {
-                              labelMargin: 10,
-                              hoverable: true,
-                              clickable: true,
-                              borderWidth: 1,
-                              borderColor: 'rgba(82, 167, 224, 0.06)'
-                          },
-                          legend: {
-                              backgroundColor: '#fff'
-                          },
-                          yaxis: { tickColor: 'rgba(0, 0, 0, 0.06)',  min : 0, max : 100, font: {color: 'rgba(0, 0, 0, 0.4)'}},
-                          $kamusData
-
-                          colors: [getUIColor('default'), getUIColor('gray'), getUIColor('blue')],
-                          tooltip: true,
-
-                      });
-
-                  $('#grapikServer$idServer').bind('plotclick', function (event, pos, item) {
-
-                  });
+        function update() {
+            plot.setData([getRandomData()]);
+            plot.draw();
+            setTimeout(update, updateInterval);
+        }
+        update();
+    });
 
 
-              });
-              </script>
-
-
-              ";
-    }elseif($option == 'bulanan'){
-      $arrayRangeDate = explode(" - ",$dateRange);
-      $getLogServer = $this->sqlQuery("select * from log_server where id_server = '$idServer' and LEFT(tanggal,4) = '".date("Y")."' group by tanggal");
-      while ($dataLogServer = $this->sqlArray($getLogServer)) {
-            $getDataLogHarian = $this->sqlQuery("select * from log_server where id_server = '$idServer' and year(tanggal) = '".date("Y")."' and tanggal = '".$dataLogServer['tanggal']."'");
-            $memoryUsage = '';
-            $cpuUsage = '';
-            $diskUsage = '';
-            while ($dataLogHarian = $this->sqlArray($getDataLogHarian)) {
-              $decodedLog = json_decode($dataLogServer['result']);
-              $memoryUsage += str_replace("%","",$decodedLog->memoryUsage);
-              $cpuUsage += str_replace("%","",$decodedLog->cpuUsage);
-              $diskUsage += str_replace("%","",$decodedLog->diskUsage);
-            }
-            $jumlahDataHarian = $this->sqlRowCount($getDataLogHarian);
-            $tanggalLog = $this->generateDate($dataLogServer['tanggal']);
-            $sumMemoryUSage = $memoryUsage / $jumlahDataHarian;
-            $sumCpuUsage = $cpuUsage / $jumlahDataHarian;
-            $sumDiskUsage = $diskUsage / $jumlahDataHarian;
-            $pushMemory = "memoryUsage.push([$nomorUrut, $sumMemoryUSage]);";
-            $pushCPU = "  cpuUsage.push([$nomorUrut, $sumCpuUsage]);";
-            $pushDisk = "diskUsage.push([$nomorUrut, $sumDiskUsage]);";
-            if(empty($optionStatistik['memoryUsage'])){
-              $pushMemory = "";
-            }
-            if(empty($optionStatistik['cpuUsage'])){
-              $pushCPU = "";
-            }
-            if(empty($optionStatistik['diskUsage'])){
-              $pushDisk = "";
-            }
-            $pushArrayStatistik .= "
-            $pushMemory
-            $pushCPU
-            $pushDisk
-            tanggalMemoryUsage.push(['$tanggalLog']);
-            tanggalCpuUsage.push(['$tanggalLog']);
-            tanggalDiskUsage.push(['$tanggalLog']);
-            ";
-            $getMaxIdForXaris = $this->sqlArray($this->sqlQuery("select min(tanggal) from log_server where year(tanggal) = '".date("Y")."' and month(tanggal) = '".$this->getMonth($dataLogServer['tanggal'])."'"));
-            if($dataLogServer['tanggal'] == $getMaxIdForXaris['min(tanggal)']){
-              $arrayListTanggal[] = "[$nomorUrut,'".$this->getNameMonth($this->getMonth($dataLogServer['tanggal']))."']";
-            }
-            $nomorUrut +=1;
-      }
-      if(!empty($optionStatistik['memoryUsage'])){
-        $arrayFilterCheckBox[] = "{ data: memoryUsage, label: 'Memory Usage',color:'red', 'Tanggal' : tanggalMemoryUsage }";
-      }
-      if(!empty($optionStatistik['cpuUsage'])){
-        $arrayFilterCheckBox[] = "{ data: cpuUsage, label: 'CPU Usage',color:'blue', 'Tanggal' : tanggalCpuUsage }";
-      }
-      if(!empty($optionStatistik['diskUsage'])){
-        $arrayFilterCheckBox[] = "{ data: diskUsage, label: 'Disk Usage',color:'green', 'Tanggal' : tanggalDiskUsage }";
-      }
-      $implodeFilterCheckBox = implode(",",$arrayFilterCheckBox);
-      $listTanggal = implode(",",$arrayListTanggal);
-      $kamusData = "
-                    xaxis: {
-                      ticks: [$listTanggal]
-                    },";
-
-      $content = "<div class='panel'>
-                  <div class='panel-body'>
-                      <h3 class='title-hero'>
-                      Graph Server Condition &nbsp<input class='btn btn-primary' type='button' value='Show Graph' onclick=$this->Prefix.showGraph($idServer) >
-                      </h3>
-                      <div class='example-box-wrapper'>
-                          <div id='grapikServer$idServer' class='mrg20B' style='width: 100%; height: 300px; padding: 0px; position: relative;'>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-              <script type='text/javascript'>
-              $(function() {
-                  var memoryUsage = [], cpuUsage = [], diskUsage = [];
-                  var tanggalMemoryUsage = [], tanggalCpuUsage = [], tanggalDiskUsage = [];
-
-                  $pushArrayStatistik
-
-                  var plot = $.plot($('#grapikServer$idServer'),
-                      [
-                        $implodeFilterCheckBox
-                      ], {
-                          series: {
-                              shadowSize: 0,
-                              lines: {
-                                  show: true,
-                                  lineWidth: 2
-                              }
-                          },
-                          grid: {
-                              labelMargin: 10,
-                              hoverable: true,
-                              clickable: true,
-                              borderWidth: 1,
-                              borderColor: 'rgba(82, 167, 224, 0.06)'
-                          },
-                          legend: {
-                              backgroundColor: '#fff'
-                          },
-                          yaxis: { tickColor: 'rgba(0, 0, 0, 0.06)',  min : 0, max : 100, font: {color: 'rgba(0, 0, 0, 0.4)'}},
-                          $kamusData
-
-                          colors: [getUIColor('default'), getUIColor('gray'), getUIColor('blue')],
-                          tooltip: true,
-
-                      });
-
-                  $('#grapikServer$idServer').bind('plotclick', function (event, pos, item) {
-
-                  });
-
-
-              });
-              </script>
-
-
-              ";
-    }
+    </script>
+    ";
     return $content;
   }
-
   function tableTopScore($dataSession){
     $no = 1;
     $getDataTopScore = $this->sqlQuery("select * from top_score where id_session = '".$dataSession['id']."' order by jumlah_point desc");
@@ -662,12 +459,79 @@ class dashboard extends baseObject{
     return $content;
   }
   function contentHistoriJawaban(){
-    $content = "jawaban";
+    $no = 1;
+    $getDataAchievement = $this->sqlQuery("select * from achievement  order by id desc");
+    while ($dataAchievement = $this->sqlArray($getDataAchievement)) {
+      $getDataMember = $this->sqlArray($this->sqlQuery("select * from member where id = '".$dataAchievement['id_member']."'"));
+      $getDataKategori = $this->sqlArray($this->sqlQuery("select * from kategori where id = '".$dataAchievement['id_kategori']."'"));
+      $getDataSoal = $this->sqlArray($this->sqlQuery("select * from soal where id = '".$dataAchievement['id_soal']."'"));
+      $listTopScore .= "
+      <tr>
+          <td> $no </td>
+          <td>".$getDataKategori['nama_kategori']."</td>
+          <td>".$getDataSoal['pertanyaan']."</td>
+          <td>".$getDataMember['nama']."</td>
+          <td >".$this->generateDate($dataAchievement['tanggal']). " ".$dataAchievement['jam']."</td>
+      </tr>
+      ";
+      $no += 1;
+    }
+    $content = "
+    <table class='table table-condensed'>
+        <thead>
+        <tr>
+            <th style='width:20px !important;'>No</th>
+            <th style='text-align:center;'>Kategori</th>
+            <th style='text-align:center;'>Soal</th>
+            <th style='text-align:center;'>Nama Member</th>
+            <th style='text-align:center;'>Tanggal</th>
+        </tr>
+        </thead>
+        <tbody>
+        $listTopScore
+
+        </tbody>
+    </table>
+
+    ";
 
     return $content;
   }
   function contentHistoriIklan(){
-    $content = "iklan";
+    $no = 1;
+    $getDataChargeEnergi = $this->sqlQuery("select * from charge_energi  order by id desc");
+    while ($dataChargeEnergi = $this->sqlArray($getDataChargeEnergi)) {
+      $getDataMember = $this->sqlArray($this->sqlQuery("select * from member where id = '".$dataChargeEnergi['id_member']."'"));
+      $getDataIklan = $this->sqlArray($this->sqlQuery("select * from type_iklan where id = '".$dataChargeEnergi['type_iklan']."' "));
+      $listTopScore .= "
+      <tr>
+          <td> $no </td>
+          <td>".$getDataMember['nama']."</td>
+          <td style='text-align:center;'>".$getDataIklan['jenis_iklan']."</td>
+          <td  style='text-align:center;'>".$this->generateDate($dataChargeEnergi['tanggal']). " ".$dataChargeEnergi['jam']."</td>
+          <td style='text-align:right;'>".$dataChargeEnergi['total_energi']."</td>
+      </tr>
+      ";
+      $no += 1;
+    }
+    $content = "
+    <table class='table table-condensed'>
+        <thead>
+        <tr>
+            <th style='width:20px !important;'>No</th>
+            <th style='text-align:center;'>Nama Member</th>
+            <th style='text-align:center;'>Jenis Iklan</th>
+            <th style='text-align:center;'>Tanggal</th>
+            <th style='text-align:center;'>Energi</th>
+        </tr>
+        </thead>
+        <tbody>
+        $listTopScore
+
+        </tbody>
+    </table>
+
+    ";
     return $content;
   }
   function getMonth($tanggal){
