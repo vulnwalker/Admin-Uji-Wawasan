@@ -40,7 +40,7 @@ class refKategori extends baseObject{
           $dataInsert = array(
             'nama_kategori' => $namaKategori,
             'deskripsi' => $deskripsiKategori,
-            'gambar' => $this->putImage($gambarKategori,"images/kategori/".md5($namaKategori).".jpg"),
+            'gambar' => $this->putImage($gambarKategori,"images/kategori/".date("Y-m-d").date("H:s").md5($namaKategori).".jpg"),
           );
           $query = $this->sqlInsert($this->tableName,$dataInsert);
           $this->sqlQuery($query);
@@ -58,7 +58,7 @@ class refKategori extends baseObject{
           $dataInsert = array(
             'nama_kategori' => $namaKategori,
             'deskripsi' => $deskripsiKategori,
-            'gambar' => $this->putImage($gambarKategori,"images/kategori/".md5($namaKategori).".jpg"),
+            'gambar' => $this->putImage($gambarKategori,"images/kategori/".date("Y-m-d").date("H:s").md5($namaKategori).".jpg"),
           );
           $query = $this->sqlUpdate($this->tableName,$dataInsert,"id ='$idEdit'");
           $this->sqlQuery($query);

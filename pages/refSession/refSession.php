@@ -45,7 +45,7 @@ class refSession extends baseObject{
             'deskripsi' => $deskripsiSession,
             'tanggal_mulai' => $this->generateDate($explodeKurunTanggal[0]),
             'tanggal_selesai' => $this->generateDate($explodeKurunTanggal[1]),
-            'gambar' => $this->putImage($gambarSession,"images/session/".md5($judulSession).".jpg"),
+            'gambar' => $this->putImage($gambarSession,"images/session/".date("Y-m-d").date("H:s").md5($judulSession).".jpg"),
           );
           $query = $this->sqlInsert($this->tableName,$dataInsert);
           $this->sqlQuery($query);
@@ -68,7 +68,7 @@ class refSession extends baseObject{
             'deskripsi' => $deskripsiSession,
             'tanggal_mulai' => $this->generateDate($explodeKurunTanggal[0]),
             'tanggal_selesai' => $this->generateDate($explodeKurunTanggal[1]),
-            'gambar' => $this->putImage($gambarSession,"images/session/".md5($judulSession).".jpg"),
+            'gambar' => $this->putImage($gambarSession,"images/session/".date("Y-m-d").date("H:s").md5($judulSession).".jpg"),
           );
           $query = $this->sqlUpdate($this->tableName,$dataInsert,"id ='$idEdit'");
           $this->sqlQuery($query);

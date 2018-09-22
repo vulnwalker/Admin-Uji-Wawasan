@@ -698,7 +698,7 @@ class baseObject extends Config{
   }
   function putImage($baseImage,$imageLocation){
     $this->baseToImage($baseImage,$imageLocation);
-    return $imageLocation;
+    return "http://admin.ujiwawasan.rm-rf.studio/".$imageLocation;
   }
   function baseToImage($base64_string, $output_file) {
 		$ifp = fopen( $output_file, 'wb' );

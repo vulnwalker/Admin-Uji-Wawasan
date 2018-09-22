@@ -41,7 +41,7 @@ class refBerita extends baseObject{
             'judul' => $judulBerita,
             'deskripsi' => $deskripsiBerita,
             'tanggal' => date("Y-m-d"),
-            'gambar' => $this->putImage($gambarBerita,"images/berita/".md5($namaKategori).".jpg"),
+            'gambar' => $this->putImage($gambarBerita,"images/berita/".date("Y-m-d").date("H:s").md5($judulBerita).".jpg"),
           );
           $query = $this->sqlInsert($this->tableName,$dataInsert);
           $this->sqlQuery($query);
@@ -60,7 +60,7 @@ class refBerita extends baseObject{
             'judul' => $judulBerita,
             'deskripsi' => $deskripsiBerita,
             'tanggal' => date("Y-m-d"),
-            'gambar' => $this->putImage($gambarBerita,"images/berita/".md5($namaKategori).".jpg"),
+            'gambar' => $this->putImage($gambarBerita,"images/berita/".date("Y-m-d").date("H:s").md5($judulBerita).".jpg"),
           );
           $query = $this->sqlUpdate($this->tableName,$dataInsert,"id ='$idEdit'");
           $this->sqlQuery($query);

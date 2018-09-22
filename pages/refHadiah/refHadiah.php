@@ -43,7 +43,7 @@ class refHadiah extends baseObject{
             'id_session' => $idSession,
             'nama' => $namaHadiah,
             'deskripsi' => $deskripsiHadiah,
-            'gambar' => $this->putImage($gambarHadiah,"images/hadiah/".md5($namaHadiah).".jpg"),
+            'gambar' => $this->putImage($gambarHadiah,"images/hadiah/".date("Y-m-d").date("H:s").md5($namaHadiah).".jpg"),
           );
           $query = $this->sqlInsert($this->tableName,$dataInsert);
           $this->sqlQuery($query);
@@ -64,7 +64,7 @@ class refHadiah extends baseObject{
             'id_session' => $idSession,
             'nama' => $namaHadiah,
             'deskripsi' => $deskripsiHadiah,
-            'gambar' => $this->putImage($gambarHadiah,"images/hadiah/".md5($namaHadiah).".jpg"),
+            'gambar' => $this->putImage($gambarHadiah,"images/hadiah/".date("Y-m-d").date("H:s").md5($namaHadiah).".jpg"),
           );
           $query = $this->sqlUpdate($this->tableName,$dataInsert,"id ='$idEdit'");
           $this->sqlQuery($query);

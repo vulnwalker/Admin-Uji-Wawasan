@@ -52,7 +52,7 @@ class refSoal extends baseObject{
             'point' => $pointSoal,
             'energi' => $energiSoal,
             'waktu' => $waktuSoal,
-            'gambar' => $this->putImage($gambarKategori,"images/soal/".md5($namaKategori).".jpg"),
+            'gambar' => $this->putImage($gambarKategori,"images/soal/".date("Y-m-d").date("H:s").md5($pertanyaanSoal).".jpg"),
           );
           $query = $this->sqlInsert($this->tableName,$dataInsert);
           $this->sqlQuery($query);
@@ -82,7 +82,7 @@ class refSoal extends baseObject{
             'point' => $pointSoal,
             'energi' => $energiSoal,
             'waktu' => $waktuSoal,
-            'gambar' => $this->putImage($gambarKategori,"images/soal/".md5($namaKategori).".jpg"),
+            'gambar' => $this->putImage($gambarKategori,"images/soal/".date("Y-m-d").date("H:s").md5($pertanyaanSoal).".jpg"),
           );
           $query = $this->sqlUpdate($this->tableName,$dataInsert,"id ='$idEdit'");
           $this->sqlQuery($query);
@@ -232,8 +232,8 @@ class refSoal extends baseObject{
         <td style='vertical-align:middle;'>$namaKategori</td>
         <td style='vertical-align:middle;'>$pertanyaan</td>
         <td style='vertical-align:middle;'>$jawaban</td>
-        <td style='vertical-align:middle;'>$point</td>
         <td style='vertical-align:middle;'>$waktu</td>
+        <td style='vertical-align:middle;'>$point</td>
         <td style='text-align:center;'><img src='$gambar' style='height:100px;width:100px;'></img></td>
     </tr>
     ";
@@ -459,7 +459,7 @@ class refSoal extends baseObject{
                           "id" => 'jawabanSoal',
                           "value" => $getDataEdit['jawaban'],
                           "params" => "maxlength = '21'",
-                          
+
                         ))."
                       </div>
                     </div>
